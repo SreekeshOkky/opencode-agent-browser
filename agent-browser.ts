@@ -186,7 +186,21 @@ export const AgentBrowser: Plugin = async ({ client, $ }, options) => {
     )
   }
 
+  const workflowRules = [
+    "## agent-browser workflow rules",
+    "- After `browser_open` or any navigation or page change, always call `browser_snapshot` to get fresh `@eN` refs before clicking/filling.",
+    "- Refs go stale whenever the page changes; reset them with a new `browser_snapshot` before the next interaction.",
+    "- `browser_console` / `browser_errors` / cookie / storage / network tools return JSON; prefer them for assertions over guessing page output.",
+    "- Prefer structured browser_* tools over running the agent-browser CLI directly via bash.",
+    "- `browser_close` ends a browser session. It may destroy cookies/localStorage for that session, requiring a fresh login or state afterwards.",
+    "",
+  ].join("\n")
+
   return {
+    "experimental.chat.system.transform": async (_input, output) => {
+      output.system.push(workflowRules)
+    },
+
     config: async (cfg) => {
       if (!opts.enableMcp) return
       try {
@@ -597,7 +611,7 @@ export const AgentBrowser: Plugin = async ({ client, $ }, options) => {
         async execute(args) {
           const guard = await ensureBinary()
           if (guard) return guard
-          return await runCli($, [...flags(args.session), "console"])
+          return await runCli($, [...flags(args.session), "console", "--json"])
         },
       }),
 
@@ -607,7 +621,84 @@ export const AgentBrowser: Plugin = async ({ client, $ }, options) => {
         async execute(args) {
           const guard = await ensureBinary()
           if (guard) return guard
-          return await runCli($, [...flags(args.session), "errors"])
+          return await runCli($, [...flags(args.session), "errors", "--json"])
+        },
+      }),
+
+      browser_cookies: tool({
+        description: "Get cookies for the active page (JSON). Use to validate/confirm session or auth state.",
+        args: { session: tool.schema.string().optional() },
+        async execute(args) {
+          const guard = await ensureBinary()
+          if (guard) return guard
+          return await runCli($, [...flags(args.session), "cookies", "get", "--json"])
+        },
+      }),
+
+      browser_storage_local: tool({
+        description: "Get localStorage of the active page (JSON).",
+        args: { session: tool.schema.string().optional() },
+        async execute(args) {
+          const guard = await ensureBinary()
+          if (guard) return guard
+          return await runCli($, [...flags(args.session), "storage", "local", "--json"])
+        },
+      }),
+
+      browser_storage_session: tool({
+        description: "Get sessionStorage of the active page (JSON).",
+        args: { session: tool.schema.string().optional() },
+        async execute(args) {
+          const guard = await ensureBinary()
+          if (guard) return guard
+          return await runCli($, [...flags(args.session), "storage", "session", "--json"])
+        },
+      }),
+
+      browser_network_requests: tool({
+        description: "List captured network requests for the active page (JSON). `filter` narrows by URL/type substring.",
+        args: {
+          filter: tool.schema.string().optional(),
+          session: tool.schema.string().optional(),
+        },
+        async execute(args) {
+          const guard = await ensureBinary()
+          if (guard) return guard
+          const parts: (string | number)[] = [...flags(args.session), "network", "requests"]
+          if (args.filter) parts.push("--filter", args.filter)
+          parts.push("--json")
+          return await runCli($, parts)
+        },
+      }),
+
+      browser_network_route: tool({
+        description:
+          "Intercept network requests. Pass `pattern` (URL glob, e.g. \"*/api/*\") plus one of: `abort` to block, " +
+          "or `body` to mock the response JSON. Use `browser_network_unroute` to stop.",
+        args: {
+          pattern: tool.schema.string(),
+          abort: tool.schema.boolean().optional(),
+          body: tool.schema.string().optional(),
+          session: tool.schema.string().optional(),
+        },
+        async execute(args) {
+          const guard = await ensureBinary()
+          if (guard) return guard
+          const parts: (string | number)[] = [...flags(args.session), "network", "route", args.pattern]
+          if (args.abort) parts.push("--abort")
+          else if (args.body) parts.push("--body", args.body)
+          else return "Provide either `abort: true` or a `body` to mock."
+          return await runCli($, parts)
+        },
+      }),
+
+      browser_network_unroute: tool({
+        description: "Remove all network request routes previously added with browser_network_route.",
+        args: { session: tool.schema.string().optional() },
+        async execute(args) {
+          const guard = await ensureBinary()
+          if (guard) return guard
+          return await runCli($, [...flags(args.session), "network", "unroute"])
         },
       }),
 
