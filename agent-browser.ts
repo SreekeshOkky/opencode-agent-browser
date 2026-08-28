@@ -108,7 +108,7 @@ function installNotice(manual: string): string {
   ].join("\n")
 }
 
-export const AgentBrowser: Plugin = async ({ client, $ }, options) => {
+export const BrowserTools: Plugin = async ({ client, $ }, options) => {
   const opts: Opts = { ...DEFAULTS, ...(options ?? {}) }
   const flags = (session?: string): (string | number)[] => {
     const name = session ?? opts.defaultSession
@@ -735,4 +735,4 @@ export const AgentBrowser: Plugin = async ({ client, $ }, options) => {
   }
 }
 
-export default AgentBrowser
+export default BrowserTools

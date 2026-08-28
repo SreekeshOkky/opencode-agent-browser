@@ -1,4 +1,4 @@
-# opencode-agent-browser
+# opencode-browser-tools
 
 An [opencode](https://opencode.ai) plugin that wraps [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser) — Vercel's fast native Rust browser-automation CLI — so opencode can launch a real browser, inspect pages, interact with the UI, and **validate UI things** (element state, text, counts, accessibility, console/runtime errors, screenshots).
 
@@ -25,12 +25,12 @@ By default the plugin **auto-installs** the CLI (and Chrome) in the background t
 .opencode/plugins/agent-browser.ts
 ```
 
-**npm** — after publishing, add to `opencode.json`:
+**npm** — install from npm, then add to `opencode.json`:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-agent-browser"]
+  "plugin": ["opencode-browser-tools"]
 }
 ```
 
@@ -40,7 +40,7 @@ By default the plugin **auto-installs** the CLI (and Chrome) in the background t
 {
   "plugin": [
     [
-      "opencode-agent-browser",
+      "opencode-browser-tools",
       { "autoInstall": true, "enableMcp": true, "mcpTools": "core", "defaultSession": "dev" }
     ]
   ]

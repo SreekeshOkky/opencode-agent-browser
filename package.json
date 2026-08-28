@@ -1,5 +1,5 @@
 {
-  "name": "opencode-agent-browser",
+  "name": "opencode-browser-tools",
   "version": "0.1.0",
   "description": "OpenCode plugin wrapping vercel-labs/agent-browser so opencode can drive a real browser and validate UI.",
   "license": "MIT",
