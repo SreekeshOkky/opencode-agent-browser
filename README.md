@@ -77,9 +77,18 @@ All tools accept an optional `session` argument to isolate browser state.
 | `browser_state` | JSON: visibility, enabled, checked, count for an element. |
 | `browser_screenshot` | Screenshot the page (optionally full-page); the image is attached so opencode can see it. |
 | `browser_a11y` | axe-core accessibility audit with violations + fix links. |
-| `browser_console` / `browser_errors` | Console messages / uncaught JS errors from the page. |
+| `browser_console` / `browser_errors` | Console messages / uncaught JS errors from the page (JSON). |
+| `browser_cookies` | Cookies for the active page (JSON) — confirm session/auth state. |
+| `browser_storage_local` / `browser_storage_session` | localStorage / sessionStorage (JSON). |
+| `browser_network_requests` | Captured network requests (JSON, optional `filter`). |
+| `browser_network_route` / `browser_network_unroute` | Intercept requests — abort (block) or mock a response body. |
 | `browser_eval` | Run arbitrary JS in the page for custom assertions. |
 | `browser_close` | Close the browser / all sessions. |
+
+During every session, the plugin injects a short set of **workflow rules** into the agent's context:
+re-snapshot after any navigation or page change (refs go stale), prefer the structured `browser_*`
+tools over raw bash, use the `--json`-backed tools for assertions, and be aware that `browser_close`
+may destroy cookies/session state for that session.
 
 ## Example workflow
 
@@ -91,6 +100,7 @@ fill("#email", "test@example.com")
 click("@e5")                                # submit button
 wait --text "Welcome"
 browser_get_text(".toast")
+errors                                      # check for uncaught JS errors
 a11y                                        # validate accessibility
 screenshot                                  # visually inspect
 ```
@@ -98,5 +108,7 @@ screenshot                                  # visually inspect
 ## Notes
 
 - Snapshots/refs go stale after the page changes — take a fresh `browser_snapshot` before interacting.
+- `browser_console`, `browser_errors`, cookie, storage, and network tools return JSON (`--json`) for reliable assertions.
+- `browser_close` ends a browser session and may destroy its cookies/localStorage, requiring a fresh login afterwards.
 - `browser_screenshot` embeds the image as a data URL; opencode downsizes very large captures automatically.
 - The MCP server (`agent-browser mcp`) registers only when the CLI binary is present at startup. If the CLI was auto-installed mid-session, restart opencode to pick up the `agent_browser_*` MCP tools.
