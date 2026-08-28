@@ -1,0 +1,32 @@
+{
+  "name": "opencode-agent-browser",
+  "version": "0.1.0",
+  "description": "OpenCode plugin wrapping vercel-labs/agent-browser so opencode can drive a real browser and validate UI.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./agent-browser.ts",
+  "types": "./agent-browser.ts",
+  "exports": {
+    ".": "./agent-browser.ts"
+  },
+  "files": [
+    "agent-browser.ts"
+  ],
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "browser",
+    "automation",
+    "agent-browser",
+    "ui",
+    "testing",
+    "e2e"
+  ],
+  "dependencies": {
+    "@opencode-ai/plugin": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "typescript": "^7.0.2"
+  }
+}
